@@ -4,6 +4,9 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import Serializers._
 
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import com.xiaomi.infra.pegasus.scalaclient.Options.MultiGet
 
 /**
   * [Copyright]
@@ -14,9 +17,9 @@ import scala.concurrent.duration.Duration
 class TableSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val table = "scala_test"
 
-    "client basic get/set/del" should "work" in {
+    "client basic get/set/del/ttl/incr" should "work" in {
         withClient { c =>
-            val hashKey = 12345L
+            val hashKey = "basic"
             delHashKey(c, table, hashKey)
 
             c.set(table, hashKey, "sort_1", "value_1")
@@ -32,12 +35,18 @@ class TableSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
             c.exists(table, hashKey, "sort_1") should equal(false)
             c.sortKeyCount(table, hashKey) should equal(0)
             c.get(table, hashKey, "sort_1").asOpt[String] should equal(None)
+
+            c.set(table,hashKey,"incr","1")
+            c.incr(table,hashKey,"incr",1)
+            c.get(table,hashKey,"incr").as[String] should equal("2")
+
+            val res = c.ttl(table,hashKey,"incr") should equal(-1)
         }
     }
 
     "client multi set/get/del" should "work" in {
         withClient { c =>
-            val hashKey = 12345L
+            val hashKey = "multi"
 
             val values = Seq("sort_1" -> "value_1", "sort_2" -> "value_2", "sort_3" -> "value_3")
             val sortKeys = values.unzip._1
@@ -172,8 +181,53 @@ class TableSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
         }
     }
 
+    "client async basic set/get/del/inrc" should "work" in {
+        withClient { c =>
+            val asyncTable = c.openAsyncTable(table)
+            val hashKey = "asyncBasic"
+            delHashKey(c, table, hashKey)
+            val resultFuture =for {
+                _<- asyncTable.set(hashKey,"sort_1","value_1")
+                _<- asyncTable.set(hashKey,"sort_2","value_2")
+                b1<- asyncTable.exists(hashKey,"sort_1")
+                b2 <- asyncTable.exists(hashKey,"sort_10")
+                v1<- asyncTable.get(hashKey,"sort_1")
+                v2 <- asyncTable.get(hashKey,"sort_2")
+            } yield {
+                (b1,b2,v1.as[String],v2.as[String])
+            }
+            val result = Await.result(resultFuture,Duration.Inf)
+            result should equal((true,false,"value_1","value_2"))
+        }
+    }
 
-  private def delHashKey[A](c: ScalaPegasusClient, table: String, hashKey: A)(implicit ser: Serializer[A]) = {
+
+    "client async multi set/get/del/inrc" should "work" in {
+        withClient { c =>
+            val hashKey = "asyncMulti"
+            val values = Seq("sort_1" -> "1", "sort_2" -> "2", "sort_3" -> "3","sort_4" -> "4")
+            val sortKeys = values.unzip._1
+            delHashKey(c, table, hashKey)
+            val asyncTable = c.openAsyncTable(table)
+            val resultFuture =for {
+                _<- asyncTable.multiSet[String,String,String](hashKey, values)
+                array1 <- asyncTable.multiGet(hashKey,sortKeys)
+                b1<- Future.sequence(sortKeys.map( k => asyncTable.exists(hashKey, k))).map(_.exists(_==false))
+                _ <- asyncTable.incr[String,String](hashKey,"sort_1",10L)
+                array2 <- asyncTable.multiGet(hashKey,sortKeys)
+                array3 <- asyncTable.multiGetRange[String,String](hashKey,null,null,MultiGet(stopInclusive=true))
+            } yield {
+                val v1 =array1.as[String].values.toMap.get("sort_1")
+                val v2 =array2.as[String].values.toMap.get("sort_1")
+                (b1,v1,v2,array3.values.length)
+            }
+            val result = Await.result(resultFuture,Duration.Inf)
+            result should equal((false,Some("1"),Some("11"),values.length))
+        }
+    }
+
+
+    private def delHashKey[A](c: ScalaPegasusClient, table: String, hashKey: A)(implicit ser: Serializer[A]) = {
         val keys = c.multiGetSortKeys(table, hashKey)
         if (keys.values.nonEmpty) {
             c.multiDel(table, hashKey, keys.values)
