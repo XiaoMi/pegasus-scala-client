@@ -32,6 +32,7 @@ cd pegasus-server-1.11.5-ba0661d--release
 ./run.sh start_onebox -w
 cd ../
 
+sbt -sbt-create
 if ! sbt test
 then
     cd pegasus-server-1.11.5-ba0661d--release
