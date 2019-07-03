@@ -23,6 +23,7 @@ cd pegasus-java-client
 git checkout 1.11.5-thrift-0.11.0-inlined-release
 mvn clean package -DskipTests
 mvn clean install -DskipTests
+cd ..
 
 # start pegasus onebox environment
 wget https://github.com/XiaoMi/pegasus/releases/download/v1.11.5/pegasus-server-1.11.5-ba0661d--release.zip
@@ -32,7 +33,6 @@ cd pegasus-server-1.11.5-ba0661d--release
 ./run.sh start_onebox -w
 cd ../
 
-sbt -sbt-create
 if ! sbt test
 then
     cd pegasus-server-1.11.5-ba0661d--release
