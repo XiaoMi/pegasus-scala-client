@@ -1,0 +1,12 @@
+language: scala
+
+jdk:
+  - oraclejdk8
+
+scala:
+  - "2.11.7"
+  - "2.12.7"
+
+script:
+  - ./scripts/travis.sh
+
