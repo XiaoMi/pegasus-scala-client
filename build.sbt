@@ -26,6 +26,6 @@ credentials += Credentials(new File((Path.userHome / ".sbt" / ".credentials").to
 
 libraryDependencies ++= Seq(
     "com.google.guava" % "guava" % "20.0",
-    "com.xiaomi.infra" % "pegasus-client" % "1.11.4-thrift-0.11.0-inlined",
+    "com.xiaomi.infra" % "pegasus-client" % "1.11.5-thrift-0.11.0-inlined",
     "org.scalatest" %% "scalatest" % "3.0.3" % Test
 )
