@@ -17,6 +17,12 @@ function shellcheck_must_pass()
 }
 shellcheck_must_pass ./scripts/travis.sh
 
+# install java-client dependency
+git clone https://github.com/XiaoMi/pegasus-java-client.git
+cd pegasus-java-client
+git checkout 1.11.5-thrift-0.11.0-inlined-release
+mvn clean package -DskipTests
+mvn clean install -DskipTests
 
 # start pegasus onebox environment
 wget https://github.com/XiaoMi/pegasus/releases/download/v1.11.5/pegasus-server-1.11.5-ba0661d--release.zip
