@@ -15,7 +15,7 @@ import com.xiaomi.infra.pegasus.scalaclient.Options.MultiGet
   */
 
 class TableSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
-    val table = "scala_test"
+    val table = "temp"
 
     "client basic get/set/del/ttl/incr" should "work" in {
         withClient { c =>
