@@ -17,6 +17,9 @@ function shellcheck_must_pass()
 }
 shellcheck_must_pass ./scripts/travis.sh
 
+# check format
+sbt scalafmtSbtCheck scalafmtCheck test:scalafmtCheck
+
 # install java-client dependency
 git clone https://github.com/XiaoMi/pegasus-java-client.git
 cd pegasus-java-client
