@@ -1,4 +1,4 @@
-version := "1.11.4-1-SNAPSHOT"
+version := "1.11.5-1-SNAPSHOT"
 
 organization := "com.xiaomi.infra"
 
