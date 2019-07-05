@@ -9,6 +9,7 @@ scalaVersion := "2.12.7"
 crossScalaVersions := Seq("2.11.7", "2.12.7")
 
 publishMavenStyle := true
+
 scalafmtOnCompile := true
 
 //custom repository
