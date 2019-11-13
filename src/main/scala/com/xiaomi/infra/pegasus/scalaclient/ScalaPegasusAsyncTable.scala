@@ -4,7 +4,10 @@ import com.xiaomi.infra.pegasus.client.{
   PegasusTableInterface => ITable
 }
 import com.xiaomi.infra.pegasus.scalaclient.{Serializer => SER}
-import io.netty.util.concurrent.{GenericFutureListener, Future => NFuture}
+import shaded.io.netty.util.concurrent.{
+  GenericFutureListener,
+  Future => NFuture
+}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
