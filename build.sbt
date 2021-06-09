@@ -20,10 +20,10 @@ resolvers ++= Seq(
 
 //custom publish url
 publishTo := {
-  //releases仓库
-  val releases = "https://url"
-  //snapshots仓库
-  val snapshots = "https://url"
+  //releases
+  val releases = "https://"
+  //snapshots
+  val snapshots = "https://"
   if (isSnapshot.value)
     Some(
       "Artifactory Realm" at snapshots + ";build.timestamp=" + new java.util.Date().getTime)
